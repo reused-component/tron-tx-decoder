@@ -126,7 +126,35 @@ class TronTxDecoder {
             throw new Error(err)
         }
     }
+    async decodeInputByTransaction(transaction, abi){
 
+        try{
+
+            let data = '0x'+transaction.raw_data.contract[0].parameter.value.data;
+            let contractAddress = transaction.raw_data.contract[0].parameter.value.contract_address;
+            if(contractAddress === undefined)
+                throw 'No Contract found for this transaction hash.';
+
+            const resultInput = _extractInfoFromABI(data, abi);
+            var names = resultInput.namesInput;
+            var inputs = resultInput.inputs;
+            var types = resultInput.typesInput;
+            let inputObject = {_length: names.length};
+            for(var i=0; i<names.length; i++){
+                let input = inputs[i]
+                inputObject[i] = input;
+            }
+            return {
+                methodName: resultInput.method,
+                inputNames: names,
+                inputTypes: types,
+                decodedInput: inputObject
+            };
+
+        }catch(err){
+            throw new Error(err)
+        }
+    }
     /**
      * Decode revert message from the transaction hash (if any)
      *
